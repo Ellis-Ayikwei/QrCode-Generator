@@ -1,53 +1,37 @@
 import 'dart:io';
-import 'dart:js';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:qrcodescanner/src/sample_feature/first_qr.dart';
 import 'package:qrcodescanner/src/sample_feature/pretty_qr.dart';
 import 'package:qrcodescanner/src/sample_feature/theme_manager.dart';
 import 'package:qrcodescanner/src/settings/settings_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:path_provider/path_provider.dart';
-import 'package:file_utils/file_utils.dart';
-import 'package:watcher/watcher.dart';
-import 'package:mime/mime.dart';
 
-import 'package:path_provider/path_provider.dart';
-import 'package:mime/mime.dart';
-import 'package:watcher/watcher.dart';
-
-List<String> _savedImages = [];
-
-class SavedImagesProvider extends ChangeNotifier {
-  List<String> _savedImages = [];
-
-  List<String> get savedImages => _savedImages;
-
-  Future<void> getSavedImages() async {
-    try {
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      final keys = prefs.getKeys();
-      final savedImages =
-          keys.where((key) => key.startsWith('saved_image_')).toList();
-      _savedImages =
-          savedImages.map<String>((key) => prefs.getString(key)!).toList();
-      notifyListeners(); // Notify listeners about the change
-    } catch (e) {
-      print('Error fetching saved images: $e');
-    }
-  }
-
-  void addSavedImage(String imagePath) {
-    _savedImages.add(imagePath);
-    notifyListeners(); // Notify listeners about the change
-  }
+// Function to fetch saved images from SharedPreferences
+Future<List<String>> getSavedImages() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final keys = prefs.getKeys();
+  final savedImages =
+      keys.where((key) => key.startsWith('saved_image_')).toList();
+  return savedImages.map<String>((key) => prefs.getString(key)!).toList();
 }
 
-bool isImageFile(String filePath) {
-  final mimeType = lookupMimeType(filePath);
-  return mimeType?.startsWith('image/') ?? false;
+class updateTheImages extends ChangeNotifier {
+  // Getter for the private variable _images
+List<String> savedImages = [];
+
+  void removeImage(int index) {
+    savedImages.removeAt(index);
+    notifyListeners();
+  }
+
+  Future<void> initializeImages() async {
+    savedImages = await getSavedImages();
+    notifyListeners();
+  }
 }
 
 class FileUploadView extends StatefulWidget {
@@ -60,27 +44,16 @@ class FileUploadView extends StatefulWidget {
 class _FileUploadViewState extends State<FileUploadView> {
   String? _textInput = null;
   late ThemeManager _themeManager;
+  bool isSwitched = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeSavedImages();
     _themeManager = ThemeManager();
   }
 
   // Method to initialize savedImages list
-  void _initializeSavedImages() async {
-    try {
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      final keys = prefs.getKeys();
-      final savedImages =
-          keys.where((key) => key.startsWith('saved_image_')).toList();
-      Provider.of<SavedImagesProvider>(context as BuildContext, listen: false)
-          .addSavedImage(savedImages as String);
-    } catch (e) {
-      print('Error initializing saved images: $e');
-    }
-  }
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -216,60 +189,61 @@ class _FileUploadViewState extends State<FileUploadView> {
                 ),
               ),
             ),
-            // Second tab: Saved Images
-            //
-             Consumer<SavedImagesProvider>(
-              builder: (context, provider, _) {
-                return GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: provider.savedImages.length,
-                  itemBuilder: (context, index) {
-                    String imageName = provider.savedImages[index].split('/').last;
-                    return GestureDetector(
-                      onLongPress: () {
-                        showPopupMenu(context, index);
-                      },
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => FullImageView(
-                              imagePath: provider.savedImages[index],
-                              index: index,
-                            ),
-                          ),
-                        );
-                      },
-                      child: Card(
-                        child: Center(
-                          child: Stack(
-                            children: [
-                              Positioned.fill(
-                                child: Image.file(
-                                  File(provider.savedImages[index]),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(imageName),
-                                ),
-                              ),
-                            ],
+            Consumer<updateTheImages>(builder: (context, provider, _) {
+              List<String> savedImages =
+                  context.watch<updateTheImages>().savedImages;
+              return GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4, // Number of columns
+                  crossAxisSpacing: 10, // Spacing between columns
+                  mainAxisSpacing: 10, // Spacing between rows
+                ),
+                itemCount: savedImages.length,
+                itemBuilder: (context, index) {
+                  String imageName = savedImages[index].split('/').last;
+                  return GestureDetector(
+                    onLongPress: () {
+                      showPopupMenu(context, index);
+                      print("this is long pressed");
+                    },
+                    onTap: () {
+                      // Handle selection of saved image
+                      print('Selected saved image: ${savedImages[index]}');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FullImageView(
+                            imagePath: savedImages[index],
+                            index: index,
                           ),
                         ),
+                      );
+                    },
+                    child: Card(
+                      child: Center(
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: Image.file(
+                                File(savedImages[index]),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(imageName), // Displaying image name
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                  },
-                );
-              },
-            ),
+                    ),
+                  );
+                },
+              );
+            })
           ],
         ),
       ),
@@ -307,10 +281,10 @@ void showPopupMenu(
               // Handle the selected menu item
               if (value == 0) {
                 // Save image again
-                print('Save Image Again: ${_savedImages[index]}');
+                // print('Save Image Again: ${savedImages[index]}');
               } else if (value == 1) {
                 // Delete image
-                print('Delete Image: ${_savedImages[index]}');
+                // print('Delete Image: ${savedImages[index]}');
               } else {
                 print('Share');
               }
@@ -321,6 +295,9 @@ void showPopupMenu(
     },
   );
 }
+
+
+
 
 class FullImageView extends StatelessWidget {
   final String imagePath;

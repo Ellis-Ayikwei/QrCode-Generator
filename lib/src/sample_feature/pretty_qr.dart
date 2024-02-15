@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
+import 'package:provider/provider.dart';
 import 'package:qrcodescanner/src/sample_feature/first_qr.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -192,8 +193,8 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
                                     final key =
                                         'saved_image_$uniqueId'; // Unique key for each image
                                     await prefs.setString(key, tempFilePath);
-                                   
 
+                                    waitForImage(context);
                                     print('Saved to $tempFilePath');
                                     // Display a snackbar to indicate successful export
                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -590,7 +591,6 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
   }
 
   String colorValueToString(Color color) {
-   
     String hexValue =
         '#${color.value.toRadixString(16).padLeft(16, '0').toUpperCase()}';
     return hexValue;
@@ -881,4 +881,8 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
 
     super.dispose();
   }
+}
+
+void waitForImage(BuildContext context) {
+  context.read<updateTheImages>().initializeImages();
 }
