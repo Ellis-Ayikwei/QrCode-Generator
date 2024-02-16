@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:qrcodescanner/src/sample_feature/first_qr.dart';
+import 'package:qrcodescanner/src/sample_feature/fullImageView.dart';
 import 'package:qrcodescanner/src/sample_feature/pretty_qr.dart';
-import 'package:qrcodescanner/src/sample_feature/theme_manager.dart';
 import 'package:qrcodescanner/src/settings/settings_page.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 
 // Function to fetch saved images from SharedPreferences
 Future<List<String>> getSavedImages() async {
@@ -16,16 +16,76 @@ Future<List<String>> getSavedImages() async {
   final keys = prefs.getKeys();
   final savedImages =
       keys.where((key) => key.startsWith('saved_image_')).toList();
-  return savedImages.map<String>((key) => prefs.getString(key)!).toList();
+
+  final jogtest =
+      savedImages.map<String>((key) => prefs.getString(key)!).toList();
+  print("jog:$jogtest");
+  return jogtest;
+}
+
+Future<void> deleteImageFromPrefs(String key) async {
+  try {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove(key);
+    print('Successfully removed key: $key from SharedPreferences');
+  } catch (e) {
+    print('Error deleting key $key from SharedPreferences: $e');
+    // Handle the error here, such as showing an error message to the user
+  }
 }
 
 class updateTheImages extends ChangeNotifier {
   // Getter for the private variable _images
-List<String> savedImages = [];
+  List<String> savedImages = [];
+  List<String> items = [];
+  Future<void> removeImage(int index) async {
+    // Extract the key from the image path
+    final path = await getTemporaryDirectory();
+    String imagePath = savedImages[index];
+    String key = imagePath.split('/').last.replaceAll('.png', '');
 
-  void removeImage(int index) {
+    // Remove the entry from SharedPreferences
+    await deleteImageFromPrefs(key);
+
+    // Remove the image path from the list
     savedImages.removeAt(index);
+
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await deleteImageFile(imagePath);
+    items = prefs.getKeys().toList();
     notifyListeners();
+    print("$key was deleted. Remaining items are: $items and the path $path");
+  }
+
+  Future<void> shareQrCode(int index) async {
+    String imagePath = savedImages[index];
+
+    try {
+      if (imagePath != null) {
+        // Share the temporary file
+        await Share.shareXFiles([XFile('${imagePath}')], text: 'Great picture');
+
+        // Delete the temporary file after sharing
+      } else {
+        print('Error: Unable to share QR code');
+      }
+    } catch (e) {
+      print('Error sharing QR code: $e');
+    }
+  }
+
+  Future<void> deleteImageFile(String imagePath) async {
+    try {
+      final File imageFile = File(imagePath);
+      if (await imageFile.exists()) {
+        await imageFile.delete();
+        print('Image file deleted: $imagePath');
+      } else {
+        print('Image file not found: $imagePath');
+      }
+    } catch (e) {
+      print('Error deleting image file: $e');
+    }
   }
 
   Future<void> initializeImages() async {
@@ -42,18 +102,17 @@ class FileUploadView extends StatefulWidget {
 }
 
 class _FileUploadViewState extends State<FileUploadView> {
-  String? _textInput = null;
-  late ThemeManager _themeManager;
+  TextEditingController _textInput = TextEditingController();
+  // String? _textInput = null;
   bool isSwitched = false;
 
   @override
   void initState() {
     super.initState();
-    _themeManager = ThemeManager();
+    Provider.of<updateTheImages>(context, listen: false).initializeImages();
   }
 
   // Method to initialize savedImages list
- 
 
   @override
   Widget build(BuildContext context) {
@@ -149,11 +208,7 @@ class _FileUploadViewState extends State<FileUploadView> {
                       ),
                       const SizedBox(height: 20),
                       TextField(
-                        onChanged: (value) {
-                          setState(() {
-                            _textInput = value;
-                          });
-                        },
+                        controller: _textInput,
                         decoration: const InputDecoration(
                           icon: Icon(Icons.link),
                           labelText: 'Enter Text',
@@ -164,11 +219,12 @@ class _FileUploadViewState extends State<FileUploadView> {
                       ElevatedButton(
                         style: Theme.of(context).elevatedButtonTheme.style,
                         onPressed: () {
-                          if (_textInput != null) {
+                          String Thetext = _textInput.text;
+                          if (Thetext != null) {
                             Get.to(
                               const PrettyQrHomePage(),
                               arguments: {
-                                'textInput': _textInput,
+                                'textInput': Thetext,
                               },
                             );
                           } else {
@@ -260,76 +316,58 @@ void showPopupMenu(
     builder: (BuildContext context) {
       return AlertDialog(
         title: Text('Options'),
-        content: DropdownButton<int>(
-          value: 0, // Set default value to 0
-          items: [
-            DropdownMenuItem<int>(
-              value: 0,
-              child: Text('Save Image Again'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.delete),
+              title: Text('Delete'),
+              onTap: () {
+                Navigator.of(context).pop();
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Confirmation'),
+                      content:
+                          Text('Are you sure you want to delete this image?'),
+                      actions: <Widget>[
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context)
+                                .pop(); // Close confirmation dialog
+                          },
+                          child: Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            // Call removeImage method to delete the image
+                            Provider.of<updateTheImages>(context, listen: false)
+                                .removeImage(index);
+                            Navigator.of(context)
+                                .pop(); // Close confirmation dialog
+                            // Close options dialog
+                          },
+                          child: Text('Delete'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
             ),
-            DropdownMenuItem<int>(
-              value: 1,
-              child: Text('Delete Image'),
-            ),
-            DropdownMenuItem<int>(
-              value: 2,
-              child: Text('Share'),
+            ListTile(
+              leading: Icon(Icons.share),
+              title: Text('Share'),
+              onTap: () {
+                Provider.of<updateTheImages>(context, listen: false)
+                    .shareQrCode(index);
+                Navigator.pop(context); // Close the options dialog
+              },
             ),
           ],
-          onChanged: (int? value) {
-            if (value != null) {
-              // Handle the selected menu item
-              if (value == 0) {
-                // Save image again
-                // print('Save Image Again: ${savedImages[index]}');
-              } else if (value == 1) {
-                // Delete image
-                // print('Delete Image: ${savedImages[index]}');
-              } else {
-                print('Share');
-              }
-            }
-          },
         ),
       );
     },
   );
-}
-
-
-
-
-class FullImageView extends StatelessWidget {
-  final String imagePath;
-  final int index;
-
-  const FullImageView({Key? key, required this.imagePath, required this.index})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        actions: [
-          GestureDetector(
-            onTap: () {
-              showPopupMenu(context, index);
-            },
-            child: Icon(Icons.menu),
-          )
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Center(
-            child: Image.file(
-              File(imagePath),
-              fit: BoxFit.cover,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

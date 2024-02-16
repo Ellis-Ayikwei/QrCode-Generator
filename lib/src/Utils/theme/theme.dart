@@ -8,6 +8,8 @@ const Color lightGray = Color(0xFFEAEAEA);
 ThemeData lightTheme = ThemeData(
   brightness: Brightness.light,
   useMaterial3: true,
+  toggleButtonsTheme: ToggleButtonsThemeData(
+      disabledColor: Colors.grey[50], borderColor: Colors.grey, color: Goldish),
   elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
     foregroundColor: MaterialStateProperty.resolveWith<Color?>(
@@ -58,6 +60,28 @@ ThemeData darkTheme = ThemeData(
   brightness: Brightness.dark,
   useMaterial3: true,
   scaffoldBackgroundColor: kScafold,
+  switchTheme: SwitchThemeData(
+    thumbColor: MaterialStateColor.resolveWith((states) {
+      if (states.contains(MaterialState.selected)) {
+        return Goldish; // Use a custom color for selected state
+      } else if (states.contains(MaterialState.hovered)) {
+        return Colors.limeAccent; // Adjust for hovered state (optional)
+      } else {
+        return Color.fromARGB(
+            255, 74, 74, 74); // Default color for other states
+      }
+    }),
+    trackColor: MaterialStateColor.resolveWith((states) {
+      if (states.contains(MaterialState.selected)) {
+        return Color.fromARGB(
+            255, 224, 223, 223); // Adjust track color based on selection
+      } else {
+        return Colors.grey; // Default track color
+      }
+    }),
+  ),
+  toggleButtonsTheme: ToggleButtonsThemeData(
+      disabledColor: Colors.grey[50], borderColor: Colors.grey, color: Goldish),
   elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
     backgroundColor: MaterialStateProperty.resolveWith<Color?>(

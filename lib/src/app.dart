@@ -4,10 +4,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:qrcodescanner/src/sample_feature/first_qr.dart';
 import 'package:qrcodescanner/src/sample_feature/onboarding.dart';
-import 'package:qrcodescanner/src/sample_feature/theme_manager.dart';
 import 'package:qrcodescanner/src/Utils/theme/theme.dart';
 
-ThemeManager _themeManager = ThemeManager();
 
 /// The Widget that configures your application.
 class MyApp extends StatefulWidget {
@@ -23,17 +21,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  @override
-  void dispose() {
-    _themeManager.removeListener(themeListener);
-    super.dispose();
-  }
 
-  @override
-  void initState() {
-    _themeManager.addListener(themeListener);
-    super.initState();
-  }
 
   themeListener() {
     if (mounted) {

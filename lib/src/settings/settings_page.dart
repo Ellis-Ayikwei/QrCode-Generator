@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../sample_feature/theme_manager.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -8,12 +7,10 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  late ThemeManager _themeManager;
 
   @override
   void initState() {
     super.initState();
-    _themeManager = ThemeManager();
   }
 
   @override

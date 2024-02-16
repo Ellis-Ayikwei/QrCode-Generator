@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -10,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
 import 'package:qrcodescanner/src/sample_feature/first_qr.dart';
+import 'package:qrcodescanner/src/sample_feature/function.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -97,6 +99,7 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
       appBar: AppBar(
         centerTitle: true,
         title: const Text('QrCode Generator'),
+        iconTheme: Theme.of(context).appBarTheme.iconTheme,
         actions: [
           GestureDetector(
               onTap: () {
@@ -175,10 +178,12 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
                                   );
 
                                   if (imageBytes != null) {
+                                    String nameSalt = generateRandomName();
+
                                     final tempDir =
                                         await getTemporaryDirectory();
                                     final tempFilePath =
-                                        '${tempDir.path}/qr_code${DateTime.now().millisecondsSinceEpoch}.png';
+                                        '${tempDir.path}/saved_image_${nameSalt}.png';
                                     final tempFile = File(tempFilePath);
                                     await tempFile.writeAsBytes(
                                       imageBytes.buffer.asUint8List(),
@@ -188,14 +193,14 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
                                     // Save the image path to cache
                                     final SharedPreferences prefs =
                                         await SharedPreferences.getInstance();
-                                    final uniqueId =
-                                        DateTime.now().millisecondsSinceEpoch;
+                                    final uniqueId = nameSalt;
                                     final key =
                                         'saved_image_$uniqueId'; // Unique key for each image
                                     await prefs.setString(key, tempFilePath);
 
                                     waitForImage(context);
-                                    print('Saved to $tempFilePath');
+
+                                    print('Saved to $key - $tempFilePath');
                                     // Display a snackbar to indicate successful export
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
@@ -318,11 +323,26 @@ class _PrettyQrSettings extends StatefulWidget {
 class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
   @protected
   late final TextEditingController imageSizeEditingController;
+  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  final Connectivity _connectivity = Connectivity();
+
+  @override
+  void checkConnectivity() async {
+    ConnectivityResult result = await _connectivity.checkConnectivity();
+    setState(() {
+      _connectionStatus = result;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     isImageSelected = widget.decoration.image != null;
+    _connectivity.onConnectivityChanged.listen((result) {
+      setState(() {
+        _connectionStatus = result;
+      });
+    });
     imageSizeEditingController = TextEditingController(
       text: ' 512w',
     );
@@ -667,7 +687,6 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
   // }
 
   @protected
-  @protected
   void toggleImage() {
     final image = widget.decoration.image != null
         ? null
@@ -689,113 +708,347 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
   String? _selectedOption;
 
   final List<Map<String, String>> _options = [
-    {'label': 'Option 1', 'imagePath': 'assets/images/flutter_logo.png'},
-    {'label': 'Option 2', 'imagePath': 'assets/images/book-stack.png'},
-    {'label': 'Option 3', 'imagePath': 'assets/images/dumbbell.png'},
-    {'label': 'Option 4', 'imagePath': 'assets/images/restaurant.png'},
-    {'label': 'Option 5', 'imagePath': 'assets/images/wi-fi.png'},
+    {
+      'label': 'Option 1',
+      'name': 'books',
+      'imagePath':
+          'https://firebasestorage.googleapis.com/v0/b/qrcode-generator-2e711.appspot.com/o/qrIcons%2Fbook-stack.png?alt=media&token=1850078f-8cd6-4cf6-9a4e-a242a9b1457c'
+    },
+    {
+      'label': 'Option 2',
+      'name': 'dumbbell',
+      'imagePath':
+          'https://firebasestorage.googleapis.com/v0/b/qrcode-generator-2e711.appspot.com/o/qrIcons%2Fdumbbell.png?alt=media&token=a8b6c032-2011-4351-824d-aeab8caa8b73'
+    },
+    {
+      'label': 'Option 3',
+      'name': 'fb',
+      'imagePath':
+          'https://firebasestorage.googleapis.com/v0/b/qrcode-generator-2e711.appspot.com/o/qrIcons%2Ffacebook-app-symbol.png?alt=media&token=f9689261-f4ab-4ddb-83b8-bafa3d7adc1b'
+    },
+    {
+      'label': 'Option 4',
+      'name': 'wifi',
+      'imagePath':
+          'https://firebasestorage.googleapis.com/v0/b/qrcode-generator-2e711.appspot.com/o/qrIcons%2Fwi-fi.png?alt=media&token=8995f370-a3be-4ebb-9d0f-8b973c3d51ea'
+    },
   ];
+
+  // void _showOptionsModal(BuildContext context) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     builder: (context) {
+  //       return Container(
+  //         padding: const EdgeInsets.all(16),
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             Expanded(
+  //               child: GridView.builder(
+  //                 shrinkWrap: true,
+  //                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+  //                   crossAxisCount: 5,
+  //                   mainAxisSpacing: 12,
+  //                   crossAxisSpacing: 12,
+  //                   childAspectRatio: 0.9,
+  //                 ),
+  //                 itemCount: _options.length,
+  //                 itemBuilder: (context, index) {
+  //                   final option = _options[index];
+  //                   return GestureDetector(
+  //                     onTap: () {
+  //                       setState(() {
+  //                         String? filepath = option['imagePath'];
+
+  //                         isImageSelected = true;
+  //                         _selectedOption = option['name'];
+  //                         widget.onChanged?.call(
+  //                           widget.decoration.copyWith(
+  //                             image: PrettyQrDecorationImage(
+  //                               image: NetworkImage(option['imagePath']!),
+  //                               position:
+  //                                   PrettyQrDecorationImagePosition.embedded,
+  //                             ),
+  //                           ),
+  //                         );
+  //                       });
+  //                       Navigator.pop(context);
+  //                     },
+  //                     child: Card(
+  //                       elevation: 3,
+  //                       child: Center(
+  //                         child: Column(
+  //                           mainAxisAlignment: MainAxisAlignment.center,
+  //                           children: [
+  //                             Image.network(
+  //                               option['imagePath']!,
+  //                               width: 20,
+  //                               height: 20,
+  //                               fit: BoxFit.contain,
+  //                             ),
+  //                           ],
+  //                         ),
+  //                       ),
+  //                     ),
+  //                   );
+  //                 },
+  //               ),
+  //             ),
+  //             const SizedBox(height: 16),
+  //             Row(
+  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //               children: [
+  //                 ElevatedButton(
+  //                   onPressed: () async {
+  //                     String? filepath = await _openFileExplorer();
+  //                     if (filepath != null) {
+  //                       setState(() {
+  //                         isImageSelected = true;
+  //                         _selectedOption = path.basename(filepath);
+  //                       });
+  //                       widget.onChanged?.call(
+  //                         widget.decoration.copyWith(
+  //                           image: PrettyQrDecorationImage(
+  //                             image: FileImage(File(filepath)),
+  //                             position:
+  //                                 PrettyQrDecorationImagePosition.embedded,
+  //                           ),
+  //                         ),
+  //                       );
+
+  //                       print(filepath);
+  //                       Navigator.pop(context);
+  //                     }
+  //                   },
+  //                   child: const Text('Upload a file'),
+  //                 ),
+  //                 TextButton(
+  //                   onPressed: () {
+  //                     Navigator.pop(context);
+  //                   },
+  //                   child: const Text('Close'),
+  //                 ),
+  //               ],
+  //             ),
+  //             const SizedBox(height: 8),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 
   void _showOptionsModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Expanded(
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 5,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 0.9,
-                  ),
-                  itemCount: _options.length,
-                  itemBuilder: (context, index) {
-                    final option = _options[index];
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          String? filepath = option['imagePath'];
-                          isImageSelected = true;
-                          _selectedOption = path.basename(filepath!);
-                          widget.onChanged?.call(
-                            widget.decoration.copyWith(
-                              image: PrettyQrDecorationImage(
-                                image: AssetImage(option['imagePath']!),
-                                position:
-                                    PrettyQrDecorationImagePosition.embedded,
-                              ),
-                            ),
-                          );
-                        });
-                        Navigator.pop(context);
-                      },
-                      child: Card(
-                        elevation: 3,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                option['imagePath']!,
-                                width: 20,
-                                height: 20,
-                                fit: BoxFit.contain,
-                              ),
-                            ],
+      builder: (context) => FutureBuilder<ConnectivityResult>(
+        future: Connectivity().checkConnectivity(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            switch (snapshot.data!) {
+              case ConnectivityResult.mobile:
+              case ConnectivityResult.wifi:
+              case ConnectivityResult.vpn:
+                // Internet is connected, show network images:
+                return _buildImageGridView(context);
+              default:
+                // No internet connection, show static images:
+                return _buildStaticImageGridView(context);
+            }
+          } else if (snapshot.hasError) {
+            // Handle connectivity check error
+            print(snapshot.error);
+            return Center(child: Text('Error checking internet connection'));
+          } else {
+            // Show loading indicator while checking
+            return const Center(child: CircularProgressIndicator());
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildImageGridView(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: GridView.builder(
+              shrinkWrap: true,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 5,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.9,
+              ),
+              itemCount: _options.length,
+              itemBuilder: (context, index) {
+                final option = _options[index];
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isImageSelected = true;
+                      _selectedOption = option['name'];
+                      widget.onChanged?.call(
+                        widget.decoration.copyWith(
+                          image: PrettyQrDecorationImage(
+                            image: NetworkImage(option['imagePath']!),
+                            position: PrettyQrDecorationImagePosition.embedded,
                           ),
+                        ),
+                      );
+                      Navigator.pop(context);
+                    });
+                  },
+                  child: Card(
+                    elevation: 3,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.network(
+                            option['imagePath']!,
+                            width: 20,
+                            height: 20,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              // Handle image loading error here
+                              return Icon(
+                                  Icons.error); // Example error placeholder
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
+                onPressed: () async {
+                  String? filepath = await _openFileExplorer();
+                  if (filepath != null) {
+                    setState(() {
+                      isImageSelected = true;
+                      _selectedOption = path.basename(filepath);
+                    });
+                    widget.onChanged?.call(
+                      widget.decoration.copyWith(
+                        image: PrettyQrDecorationImage(
+                          image: FileImage(File(filepath)),
+                          position: PrettyQrDecorationImagePosition.embedded,
                         ),
                       ),
                     );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      String? filepath = await _openFileExplorer();
-                      if (filepath != null) {
-                        setState(() {
-                          isImageSelected = true;
-                          _selectedOption = path.basename(filepath);
-                        });
-                        widget.onChanged?.call(
-                          widget.decoration.copyWith(
-                            image: PrettyQrDecorationImage(
-                              image: FileImage(File(filepath)),
-                              position:
-                                  PrettyQrDecorationImagePosition.embedded,
-                            ),
-                          ),
-                        );
 
-                        print(filepath);
-                        Navigator.pop(context);
-                      }
-                    },
-                    child: const Text('Upload a file'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Close'),
-                  ),
-                ],
+                    print(filepath);
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text('Upload a file'),
               ),
-              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Close'),
+              ),
             ],
           ),
-        );
-      },
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStaticImageGridView(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: GridView.builder(
+              shrinkWrap: true,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 5,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.9,
+              ),
+              itemCount: _options.length,
+              itemBuilder: (context, index) {
+                final option = _options[index];
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      // Handle selecting this option (similar to _buildImageGridView)
+                    });
+                  },
+                  child: Card(
+                    elevation: 3,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                              'assets/images/no-wifi.png'), // Replace with your static image
+                          // Consider adding a message
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          Container(
+              padding: const EdgeInsets.all(16),
+              child: Text("No Internet Available")),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
+                onPressed: () async {
+                  String? filepath = await _openFileExplorer();
+                  if (filepath != null) {
+                    setState(() {
+                      isImageSelected = true;
+                      _selectedOption = path.basename(filepath);
+                    });
+                    widget.onChanged?.call(
+                      widget.decoration.copyWith(
+                        image: PrettyQrDecorationImage(
+                          image: FileImage(File(filepath)),
+                          position: PrettyQrDecorationImagePosition.embedded,
+                        ),
+                      ),
+                    );
+
+                    print(filepath);
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text('Upload a file'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
     );
   }
 
