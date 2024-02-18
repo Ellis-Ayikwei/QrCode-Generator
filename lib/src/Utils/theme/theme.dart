@@ -4,6 +4,7 @@ const Color obsidian = Color.fromARGB(255, 28, 28, 28);
 const Color kScafold = Color.fromARGB(154, 28, 28, 28);
 const Color Goldish = Color(0xFFA67C00);
 const Color lightGray = Color(0xFFEAEAEA);
+const Color darkerGrey = Color.fromARGB(255, 26, 26, 27);
 
 ThemeData lightTheme = ThemeData(
   brightness: Brightness.light,
@@ -60,6 +61,8 @@ ThemeData darkTheme = ThemeData(
   brightness: Brightness.dark,
   useMaterial3: true,
   scaffoldBackgroundColor: kScafold,
+  dialogTheme:
+      DialogTheme(backgroundColor: darkerGrey, iconColor: Colors.white),
   switchTheme: SwitchThemeData(
     thumbColor: MaterialStateColor.resolveWith((states) {
       if (states.contains(MaterialState.selected)) {

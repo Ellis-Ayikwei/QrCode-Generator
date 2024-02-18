@@ -6,7 +6,6 @@ import 'package:qrcodescanner/src/sample_feature/first_qr.dart';
 import 'package:qrcodescanner/src/sample_feature/onboarding.dart';
 import 'package:qrcodescanner/src/Utils/theme/theme.dart';
 
-
 /// The Widget that configures your application.
 class MyApp extends StatefulWidget {
   const MyApp({
@@ -21,8 +20,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
-
   themeListener() {
     if (mounted) {
       setState(() {});
@@ -36,7 +33,7 @@ class _MyAppState extends State<MyApp> {
       // MaterialApp to restore the navigation stack when a user leaves and
       // returns to the app after it has been killed while running in the
       // background.
-debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: false,
       // Provide the generated AppLocalizations to the MaterialApp. This
       // allows descendant Widgets to display the correct translations
       // depending on the user's locale.

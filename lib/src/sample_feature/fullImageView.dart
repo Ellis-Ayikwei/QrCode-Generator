@@ -14,24 +14,30 @@ class FullImageView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        
         iconTheme: Theme.of(context).appBarTheme.iconTheme,
         actions: [
           GestureDetector(
             onTap: () {
               showPopupMenu(context, index);
             },
-            child: Icon(Icons.menu),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Icon(Icons.menu),
+            ),
           )
         ],
       ),
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Center(
-            child: Image.file(
-              File(imagePath),
-              fit: BoxFit.cover,
+            child: Container(
+              padding: EdgeInsets.all(16),
+              child: Image.file(
+                File(imagePath),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
         ],

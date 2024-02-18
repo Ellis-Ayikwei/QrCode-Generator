@@ -8,7 +8,7 @@ import 'src/sample_feature/first_qr.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize SharedPreferences
+// Initialize SharedPreferences
   SharedPreferences prefs = await SharedPreferences.getInstance();
 
   // Check if it's the first time launch

@@ -6,12 +6,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
-import 'package:qrcodescanner/src/sample_feature/first_qr.dart';
-import 'package:qrcodescanner/src/sample_feature/function.dart';
+import 'package:qrcodescanner/core.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -51,7 +51,7 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
 
     decoration = const PrettyQrDecoration(
       shape: PrettyQrSmoothSymbol(
-        color: Color(0xFF74565F),
+        color: Color.fromARGB(255, 0, 0, 0),
       ),
       image: null,
     );
@@ -105,7 +105,10 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
               onTap: () {
                 _shareQrCode();
               },
-              child: Icon(Icons.share))
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Icon(Icons.share),
+              ))
         ],
       ),
       body: Align(
@@ -190,6 +193,22 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
                                       mode: FileMode.write,
                                     );
 
+                                    if (imageBytes != null) {
+                                      final result =
+                                          await ImageGallerySaver.saveImage(
+                                        imageBytes.buffer.asUint8List(),
+                                        name:
+                                            "qr_code_${DateTime.now().millisecondsSinceEpoch}", // Unique name for the image
+                                      );
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: const Text(
+                                              'QR code saved Gallery'),
+                                        ),
+                                      );
+                                    }
+
                                     // Save the image path to cache
                                     final SharedPreferences prefs =
                                         await SharedPreferences.getInstance();
@@ -202,12 +221,12 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
 
                                     print('Saved to $key - $tempFilePath');
                                     // Display a snackbar to indicate successful export
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: const Text(
-                                            'QR code saved successfully'),
-                                      ),
-                                    );
+                                    // ScaffoldMessenger.of(context).showSnackBar(
+                                    //   SnackBar(
+                                    //     content: const Text(
+                                    //         'QR code saved successfully'),
+                                    //   ),
+                                    // );
                                   } else {
                                     print('Error: Unable to export QR code');
                                   }
@@ -354,7 +373,6 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
     return int.parse(rawValue.replaceAll('w', '').replaceAll(' ', ''));
   }
 
-  @protected
   Color get shapeColor {
     var shape = widget.decoration.shape;
     if (shape is PrettyQrSmoothSymbol) return shape.color;
@@ -373,6 +391,7 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
     return false;
   }
 
+  bool forThevalue = false;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -419,7 +438,9 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
         const Divider(),
         SwitchListTile.adaptive(
           value: shapeColor != Colors.black,
-          onChanged: (value) => toggleColor(),
+          onChanged: (value) {
+            toggleColor();
+          },
           secondary: const Icon(Icons.color_lens_outlined),
           title: const Text('Colored'),
         ),
@@ -586,13 +607,16 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
                     child: TextField(
                       enabled: false,
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium!
+                          .copyWith(color: Colors.black),
                       controller: imageSizeEditingController,
                       decoration: InputDecoration(
                         filled: true,
                         counterText: '',
                         contentPadding: EdgeInsets.zero,
-                        fillColor: Theme.of(context).colorScheme.background,
+                        fillColor: Colors.white,
                         disabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Theme.of(context).colorScheme.onBackground,
@@ -674,17 +698,6 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
   }
 
   bool isImageEnabled = false;
-  // @protected
-  // void toggleImage() {
-  //   setState(() {
-  //     isImageEnabled = !isImageEnabled;
-  //   });
-  //   final image = isImageEnabled ? widget.decoration.image : null;
-
-  //   widget.onChanged?.call(
-  //     PrettyQrDecoration(image: image, shape: widget.decoration.shape),
-  //   );
-  // }
 
   @protected
   void toggleImage() {
@@ -733,110 +746,6 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
           'https://firebasestorage.googleapis.com/v0/b/qrcode-generator-2e711.appspot.com/o/qrIcons%2Fwi-fi.png?alt=media&token=8995f370-a3be-4ebb-9d0f-8b973c3d51ea'
     },
   ];
-
-  // void _showOptionsModal(BuildContext context) {
-  //   showModalBottomSheet(
-  //     context: context,
-  //     builder: (context) {
-  //       return Container(
-  //         padding: const EdgeInsets.all(16),
-  //         child: Column(
-  //           mainAxisSize: MainAxisSize.min,
-  //           children: [
-  //             Expanded(
-  //               child: GridView.builder(
-  //                 shrinkWrap: true,
-  //                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-  //                   crossAxisCount: 5,
-  //                   mainAxisSpacing: 12,
-  //                   crossAxisSpacing: 12,
-  //                   childAspectRatio: 0.9,
-  //                 ),
-  //                 itemCount: _options.length,
-  //                 itemBuilder: (context, index) {
-  //                   final option = _options[index];
-  //                   return GestureDetector(
-  //                     onTap: () {
-  //                       setState(() {
-  //                         String? filepath = option['imagePath'];
-
-  //                         isImageSelected = true;
-  //                         _selectedOption = option['name'];
-  //                         widget.onChanged?.call(
-  //                           widget.decoration.copyWith(
-  //                             image: PrettyQrDecorationImage(
-  //                               image: NetworkImage(option['imagePath']!),
-  //                               position:
-  //                                   PrettyQrDecorationImagePosition.embedded,
-  //                             ),
-  //                           ),
-  //                         );
-  //                       });
-  //                       Navigator.pop(context);
-  //                     },
-  //                     child: Card(
-  //                       elevation: 3,
-  //                       child: Center(
-  //                         child: Column(
-  //                           mainAxisAlignment: MainAxisAlignment.center,
-  //                           children: [
-  //                             Image.network(
-  //                               option['imagePath']!,
-  //                               width: 20,
-  //                               height: 20,
-  //                               fit: BoxFit.contain,
-  //                             ),
-  //                           ],
-  //                         ),
-  //                       ),
-  //                     ),
-  //                   );
-  //                 },
-  //               ),
-  //             ),
-  //             const SizedBox(height: 16),
-  //             Row(
-  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //               children: [
-  //                 ElevatedButton(
-  //                   onPressed: () async {
-  //                     String? filepath = await _openFileExplorer();
-  //                     if (filepath != null) {
-  //                       setState(() {
-  //                         isImageSelected = true;
-  //                         _selectedOption = path.basename(filepath);
-  //                       });
-  //                       widget.onChanged?.call(
-  //                         widget.decoration.copyWith(
-  //                           image: PrettyQrDecorationImage(
-  //                             image: FileImage(File(filepath)),
-  //                             position:
-  //                                 PrettyQrDecorationImagePosition.embedded,
-  //                           ),
-  //                         ),
-  //                       );
-
-  //                       print(filepath);
-  //                       Navigator.pop(context);
-  //                     }
-  //                   },
-  //                   child: const Text('Upload a file'),
-  //                 ),
-  //                 TextButton(
-  //                   onPressed: () {
-  //                     Navigator.pop(context);
-  //                   },
-  //                   child: const Text('Close'),
-  //                 ),
-  //               ],
-  //             ),
-  //             const SizedBox(height: 8),
-  //           ],
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
 
   void _showOptionsModal(BuildContext context) {
     showModalBottomSheet(
@@ -937,7 +846,8 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
                   if (filepath != null) {
                     setState(() {
                       isImageSelected = true;
-                      _selectedOption = path.basename(filepath);
+                      _selectedOption =
+                          path.basename(filepath).substring(0, 20);
                     });
                     widget.onChanged?.call(
                       widget.decoration.copyWith(
@@ -1053,7 +963,7 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
   }
 
   Color pickerColor = Color.fromARGB(255, 157, 11, 230);
-  Color currentColor = Color(0xff443a49);
+  Color currentColor = Goldish;
 
 // ValueChanged<Color> callback
   void changeColor(Color color) {
@@ -1062,6 +972,22 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
       pickerColor = color;
       currentColor = color;
     });
+
+    var shape = widget.decoration.shape;
+
+    if (shape is PrettyQrSmoothSymbol) {
+      shape = PrettyQrSmoothSymbol(
+        color: color,
+        roundFactor: shape.roundFactor,
+      );
+    } else if (shape is PrettyQrRoundedSymbol) {
+      shape = PrettyQrRoundedSymbol(
+        color: color,
+        borderRadius: shape.borderRadius,
+      );
+    }
+
+    widget.onChanged?.call(widget.decoration.copyWith(shape: shape));
   }
 
   void showColorDialog(BuildContext context) {
@@ -1072,12 +998,14 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
           title: Text('Pick a color!'),
           content: SingleChildScrollView(
             child: ColorPicker(
-              paletteType: PaletteType.hslWithHue,
-              displayThumbColor: true,
-              hexInputBar: true, enableAlpha: true,
-              pickerColor: pickerColor,
-              onColorChanged: changeColor, // Simplified callback reference
-            ),
+                paletteType: PaletteType.hslWithHue,
+                displayThumbColor: true,
+                hexInputBar: true,
+                enableAlpha: true,
+                pickerColor: pickerColor,
+                onColorChanged: changeColor // Simplified callback reference
+
+                ),
           ),
           actions: <Widget>[
             ElevatedButton(
@@ -1121,12 +1049,6 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
     }
     return null; // Return null if no file was selected or an error occurred
   }
-
-  // void _clearImage() {
-  //   setState(() {
-  //     _filePath = null;
-  //   });
-  // }
 
   @override
   void dispose() {

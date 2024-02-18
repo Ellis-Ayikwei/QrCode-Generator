@@ -112,195 +112,208 @@ class _FileUploadViewState extends State<FileUploadView> {
     Provider.of<updateTheImages>(context, listen: false).initializeImages();
   }
 
+  @override
+  void dispose() {
+    _textInput.dispose();
+    super.dispose();
+  }
   // Method to initialize savedImages list
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2, // Number of tabs
-      child: Scaffold(
-        appBar: AppBar(
-          foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
-          iconTheme: Theme.of(context).appBarTheme.iconTheme,
-          backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-          title: const Text('QrCode Generator'),
-          titleTextStyle: Theme.of(context).appBarTheme.titleTextStyle,
-          centerTitle: true,
-          actions: [
-            IconButton(
-              onPressed: () {
-                Get.to(SettingsPage());
-              },
-              icon: const Icon(
-                Icons.settings,
-                size: 24.0,
+      child: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
+            iconTheme: Theme.of(context).appBarTheme.iconTheme,
+            backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+            title: const Text('QrCode Generator'),
+            titleTextStyle: Theme.of(context).appBarTheme.titleTextStyle,
+            centerTitle: true,
+            actions: [
+              IconButton(
+                onPressed: () {
+                  Get.to(SettingsPage());
+                },
+                icon: const Icon(
+                  Icons.settings,
+                  size: 24.0,
+                ),
               ),
-            ),
-          ],
-          bottom: const TabBar(
-            labelColor: Colors.white,
-            unselectedLabelColor: Color.fromARGB(255, 171, 171, 171),
-            tabs: [
-              Tab(text: 'Create new'),
-              Tab(text: 'Saved Images'),
             ],
+            bottom: const TabBar(
+              labelColor: Colors.white,
+              unselectedLabelColor: Color.fromARGB(255, 171, 171, 171),
+              tabs: [
+                Tab(text: 'Create new'),
+                Tab(text: 'Saved Images'),
+              ],
+            ),
           ),
-        ),
-        body: TabBarView(
-          children: [
-            // First tab: Upload
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: SingleChildScrollView(
-                  child: Column(
-                    verticalDirection: VerticalDirection.down,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Container(
-                        height: 300,
-                        width: 100,
-                        padding: const EdgeInsets.all(8.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text(
-                                '1. Upload your file to a cloud storage platform like:',
-                                style: Theme.of(context).textTheme.bodyLarge),
-                            Padding(
-                              padding: EdgeInsets.only(left: 16.0),
-                              child: Text('- iCloud',
-                                  style:
-                                      Theme.of(context).textTheme.bodyMedium),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(left: 16.0),
-                              child: Text('- Google Drive',
-                                  style:
-                                      Theme.of(context).textTheme.bodyMedium),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(left: 16.0),
-                              child: Text(
-                                '- Dropbox',
-                                style: Theme.of(context).textTheme.bodyMedium,
+          body: TabBarView(
+            children: [
+              // First tab: Upload
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      verticalDirection: VerticalDirection.down,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Container(
+                          height: 300,
+                          width: 100,
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(
+                                  '1. Upload your file to a cloud storage platform like:',
+                                  style: Theme.of(context).textTheme.bodyLarge),
+                              Padding(
+                                padding: EdgeInsets.only(left: 16.0),
+                                child: Text('- iCloud',
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium),
                               ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(left: 16.0),
-                              child: Text(
-                                '- OneDrive',
-                                style: Theme.of(context).textTheme.bodyMedium,
+                              Padding(
+                                padding: EdgeInsets.only(left: 16.0),
+                                child: Text('- Google Drive',
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium),
                               ),
-                            ),
-                            Text(
-                                '2. Share the file, ensuring access is granted to anyone scanning your code.',
-                                style: Theme.of(context).textTheme.bodyLarge),
-                            Text('3. Insert the share link below.',
-                                style: Theme.of(context).textTheme.bodyLarge)
-                          ],
+                              Padding(
+                                padding: EdgeInsets.only(left: 16.0),
+                                child: Text(
+                                  '- Dropbox',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: 16.0),
+                                child: Text(
+                                  '- OneDrive',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ),
+                              Text(
+                                  '2. Share the file, ensuring access is granted to anyone scanning your code.',
+                                  style: Theme.of(context).textTheme.bodyLarge),
+                              Text('3. Insert the share link below.',
+                                  style: Theme.of(context).textTheme.bodyLarge)
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      TextField(
-                        controller: _textInput,
-                        decoration: const InputDecoration(
-                          icon: Icon(Icons.link),
-                          labelText: 'Enter Text',
-                          border: OutlineInputBorder(),
+                        const SizedBox(height: 20),
+                        TextField(
+                          controller: _textInput,
+                          decoration: const InputDecoration(
+                            icon: Icon(Icons.link),
+                            labelText: 'Enter Text',
+                            border: OutlineInputBorder(),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        style: Theme.of(context).elevatedButtonTheme.style,
-                        onPressed: () {
-                          String Thetext = _textInput.text;
-                          if (Thetext != null) {
-                            Get.to(
-                              const PrettyQrHomePage(),
-                              arguments: {
-                                'textInput': Thetext,
-                              },
-                            );
-                          } else {
-                            // Show a Snackbar message if _textInput is empty
-                            Get.snackbar(
-                              animationDuration: Duration(microseconds: 3000),
-                              duration: Duration(milliseconds: 1500),
-                              'Input Required',
-                              'Please input the link to Generate a Qrcode',
-                              snackPosition: SnackPosition.BOTTOM,
-                            );
-                          }
-                        },
-                        child: const Text('Generate QrCode'),
-                      ),
-                    ],
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          style: Theme.of(context).elevatedButtonTheme.style,
+                          onPressed: () {
+                            String Thetext = _textInput.text;
+                            if (Thetext != "") {
+                              Get.to(
+                                const PrettyQrHomePage(),
+                                arguments: {
+                                  'textInput': Thetext,
+                                },
+                              );
+                              print(
+                                  "printed texxxxy $Thetext" + " from button");
+                            } else {
+                              // Show a Snackbar message if _textInput is empty
+                              Get.snackbar(
+                                animationDuration: Duration(microseconds: 3000),
+                                duration: Duration(milliseconds: 1500),
+                                'Input Required',
+                                'Please input the link to Generate a Qrcode',
+                                snackPosition: SnackPosition.BOTTOM,
+                              );
+                            }
+                          },
+                          child: const Text('Generate QrCode'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            Consumer<updateTheImages>(builder: (context, provider, _) {
-              List<String> savedImages =
-                  context.watch<updateTheImages>().savedImages;
-              return GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4, // Number of columns
-                  crossAxisSpacing: 10, // Spacing between columns
-                  mainAxisSpacing: 10, // Spacing between rows
-                ),
-                itemCount: savedImages.length,
-                itemBuilder: (context, index) {
-                  String imageName = savedImages[index].split('/').last;
-                  return GestureDetector(
-                    onLongPress: () {
-                      showPopupMenu(context, index);
-                      print("this is long pressed");
-                    },
-                    onTap: () {
-                      // Handle selection of saved image
-                      print('Selected saved image: ${savedImages[index]}');
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FullImageView(
-                            imagePath: savedImages[index],
-                            index: index,
+              Consumer<updateTheImages>(builder: (context, provider, _) {
+                List<String> savedImages =
+                    context.watch<updateTheImages>().savedImages;
+                return GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4, // Number of columns
+                    crossAxisSpacing: 10, // Spacing between columns
+                    mainAxisSpacing: 10, // Spacing between rows
+                  ),
+                  itemCount: savedImages.length,
+                  itemBuilder: (context, index) {
+                    String imageName = savedImages[index].split('/').last;
+                    return GestureDetector(
+                      onLongPress: () {
+                        showPopupMenu(context, index);
+                        print("this is long pressed");
+                      },
+                      onTap: () {
+                        // Handle selection of saved image
+                        print('Selected saved image: ${savedImages[index]}');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FullImageView(
+                              imagePath: savedImages[index],
+                              index: index,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Card(
+                        child: Center(
+                          child: Stack(
+                            children: [
+                              Positioned.fill(
+                                child: Image.file(
+                                  File(savedImages[index]),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child:
+                                      Text(imageName), // Displaying image name
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                    child: Card(
-                      child: Center(
-                        child: Stack(
-                          children: [
-                            Positioned.fill(
-                              child: Image.file(
-                                File(savedImages[index]),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.bottomCenter,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(imageName), // Displaying image name
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                    ),
-                  );
-                },
-              );
-            })
-          ],
+                    );
+                  },
+                );
+              })
+            ],
+          ),
         ),
       ),
     );
