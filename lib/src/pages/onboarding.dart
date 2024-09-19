@@ -1,38 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:qrcodescanner/src/sample_feature/first_qr.dart';
+import 'package:qrcodegenerator/src/pages/first_qr.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
+
   @override
-  _OnboardingScreenState createState() => _OnboardingScreenState();
+  OnboardingScreenState createState() => OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
   final List<Widget> _pages = [
-    OnboardingPage(
+    const OnboardingPage(
       title: 'Welcome to QR Code App',
       description: 'Easily generate and scan QR codes.',
-      imagePath: 'assets/images/flutter_logo.png',
+      imagePath: 'assets/images/splash.png',
     ),
-    OnboardingPage(
-      title: 'Add Icons To QR Codes',
-      description: 'Create QR codes for your URLs, text, contacts, and more.',
-      imagePath: 'assets/images/flutter_logo.png',
+    const OnboardingPage(
+      title: 'Text, contacts, and more',
+      description: 'Create QR codes for your URLs,\n text, contacts, and more.',
+      imagePath: 'assets/images/first.jpg',
     ),
-    OnboardingPage(
+    const OnboardingPage(
       title: 'Scan QR Codes',
       description:
-          'Effortlessly Create QR codes with embeded icons to access information.',
-      imagePath: 'assets/images/flutter_logo.png',
+          'Effortlessly Create QR codes with \n embeded icons to access information.',
+      imagePath: 'assets/images/embeded.jpg',
     ),
-    OnboardingPage(
+    const OnboardingPage(
       title: 'Get Started!',
       description: 'Start using QR Code Generator App now.',
-      imagePath: 'assets/images/flutter_logo.png',
+      imagePath: 'assets/images/second.jpg',
       isLastPage: true,
     ),
   ];
@@ -75,7 +77,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         onPressed: () {
                           _finishOnboarding();
                         },
-                        child: Text('Get Started'),
+                        child: const Text('Get Started'),
                       )
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -83,17 +85,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ElevatedButton(
                             onPressed: () {
                               _pageController.nextPage(
-                                  duration: Duration(milliseconds: 500),
+                                  duration: const Duration(milliseconds: 500),
                                   curve: Curves.ease);
                             },
-                            child: Text('Next'),
+                            child: const Text('Next'),
                           ),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           TextButton(
                             onPressed: () {
                               _finishOnboarding();
                             },
-                            child: Text('Skip'),
+                            child: const Text('Skip'),
                           ),
                         ],
                       ),
@@ -115,13 +117,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _indicator(bool isActive) {
     return AnimatedContainer(
-      duration: Duration(milliseconds: 150),
-      margin: EdgeInsets.symmetric(horizontal: 8.0),
+      duration: const Duration(milliseconds: 150),
+      margin: const EdgeInsets.symmetric(horizontal: 8.0),
       height: 8.0,
       width: isActive ? 24.0 : 8.0,
       decoration: BoxDecoration(
         color: isActive ? Colors.blue : Colors.grey,
-        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
       ),
     );
   }
@@ -129,7 +131,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _finishOnboarding() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('first_time', false);
-    Get.to(FileUploadView());
+    Get.to(const FileUploadView());
   }
 }
 
@@ -152,23 +154,24 @@ class OnboardingPage extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        SizedBox(height: 50),
+        const SizedBox(height: 50),
         Text(
           title,
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         Text(
           description,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16),
+          softWrap: true,
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         Image.asset(
           imagePath,
           height: 300,
         ),
-        if (!isLastPage) SizedBox(height: 20),
+        if (!isLastPage) const SizedBox(height: 20),
       ],
     );
   }

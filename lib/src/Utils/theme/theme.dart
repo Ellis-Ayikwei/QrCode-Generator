@@ -62,7 +62,7 @@ ThemeData darkTheme = ThemeData(
   useMaterial3: true,
   scaffoldBackgroundColor: kScafold,
   dialogTheme:
-      DialogTheme(backgroundColor: darkerGrey, iconColor: Colors.white),
+      const DialogTheme(backgroundColor: darkerGrey, iconColor: Colors.white),
   switchTheme: SwitchThemeData(
     thumbColor: MaterialStateColor.resolveWith((states) {
       if (states.contains(MaterialState.selected)) {
@@ -70,13 +70,13 @@ ThemeData darkTheme = ThemeData(
       } else if (states.contains(MaterialState.hovered)) {
         return Colors.limeAccent; // Adjust for hovered state (optional)
       } else {
-        return Color.fromARGB(
+        return const Color.fromARGB(
             255, 74, 74, 74); // Default color for other states
       }
     }),
     trackColor: MaterialStateColor.resolveWith((states) {
       if (states.contains(MaterialState.selected)) {
-        return Color.fromARGB(
+        return const Color.fromARGB(
             255, 224, 223, 223); // Adjust track color based on selection
       } else {
         return Colors.grey; // Default track color

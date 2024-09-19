@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
-import 'package:qrcodescanner/src/sample_feature/first_qr.dart';
-import 'package:qrcodescanner/src/sample_feature/onboarding.dart';
-import 'package:qrcodescanner/src/Utils/theme/theme.dart';
+import 'package:qrcodegenerator/src/pages/first_qr.dart';
+import 'package:qrcodegenerator/src/pages/onboarding.dart';
+import 'package:qrcodegenerator/src/Utils/theme/theme.dart';
 
 /// The Widget that configures your application.
 class MyApp extends StatefulWidget {
@@ -67,11 +67,11 @@ class _MyAppState extends State<MyApp> {
       getPages: [
         GetPage(
           name: '/home',
-          page: () => FileUploadView(),
+          page: () => const FileUploadView(),
         ),
         GetPage(
           name: '/onboarding',
-          page: () => OnboardingScreen(),
+          page: () => const OnboardingScreen(),
         ),
       ],
       initialRoute: widget.initialRoute,

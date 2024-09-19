@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'src/app.dart';
-import 'src/sample_feature/first_qr.dart';
+import 'src/pages/first_qr.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

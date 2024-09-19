@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
@@ -5,13 +6,15 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:provider/provider.dart';
-import 'package:qrcodescanner/core.dart';
+import 'package:qrcodegenerator/core.dart';
+import 'package:qrcodegenerator/src/pages/savedialogue.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,7 +30,7 @@ class PrettyQrHomePage extends StatefulWidget {
 }
 
 class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
-  String _data = Get.arguments['textInput'];
+  final String _data = Get.arguments['textInput'];
 
   @protected
   late QrCode qrCode;
@@ -77,20 +80,14 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
           imageData.buffer.asUint8List(),
           mode: FileMode.write,
         );
-        print('saved to ${tempFilePath}');
+        
 
         // Share the temporary file
-        await Share.shareXFiles([XFile('${tempFilePath}')],
-            text: 'Great picture');
-
+        await Share.shareXFiles([XFile(tempFilePath)], text: 'Great picture');
         // Delete the temporary file after sharing
         await tempFile.delete();
-      } else {
-        print('Error: Unable to share QR code');
-      }
-    } catch (e) {
-      print('Error sharing QR code: $e');
-    }
+      } else {}
+    } catch (e) {}
   }
 
   @override
@@ -103,10 +100,12 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
         actions: [
           GestureDetector(
               onTap: () {
-                _shareQrCode();
+                showPngInfo(context);
+  _shareQrCode();
+                                
               },
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
+              child: const Padding(
+                padding: EdgeInsets.all(12.0),
                 child: Icon(Icons.share),
               ))
         ],
@@ -152,7 +151,7 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
                               bottom: 15,
                             ),
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                   color: Color.fromARGB(255, 244, 244, 244),
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(15))),
@@ -172,6 +171,7 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
                                 decoration = value;
                               }),
                               onExportPressed: (size) async {
+                                showPngInfo(context);
                                 try {
                                   final imageBytes =
                                       await qrImage.toImageAsBytes(
@@ -186,55 +186,57 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
                                     final tempDir =
                                         await getTemporaryDirectory();
                                     final tempFilePath =
-                                        '${tempDir.path}/saved_image_${nameSalt}.png';
+                                        '${tempDir.path}/saved_image_$nameSalt.png';
+                                    print("images saved to " + tempFilePath);
                                     final tempFile = File(tempFilePath);
                                     await tempFile.writeAsBytes(
                                       imageBytes.buffer.asUint8List(),
                                       mode: FileMode.write,
                                     );
 
-                                    if (imageBytes != null) {
-                                      final result =
-                                          await ImageGallerySaver.saveImage(
-                                        imageBytes.buffer.asUint8List(),
-                                        name:
-                                            "qr_code_${DateTime.now().millisecondsSinceEpoch}", // Unique name for the image
-                                      );
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: const Text(
-                                              'QR code saved Gallery'),
-                                        ),
-                                      );
-                                    }
+                                    final result =
+                                        await ImageGallerySaver.saveImage(
+                                      imageBytes.buffer.asUint8List(),
+                                      name:
+                                          "qr_code_${DateTime.now().millisecondsSinceEpoch}",
+                                    );
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('QR code saved Gallery'),
+                                      ),
+                                    );
 
-                                    // Save the image path to cache
                                     final SharedPreferences prefs =
                                         await SharedPreferences.getInstance();
                                     final uniqueId = nameSalt;
-                                    final key =
-                                        'saved_image_$uniqueId'; // Unique key for each image
+                                    final key = 'saved_image_$uniqueId';
                                     await prefs.setString(key, tempFilePath);
-
                                     waitForImage(context);
-
-                                    print('Saved to $key - $tempFilePath');
-                                    // Display a snackbar to indicate successful export
-                                    // ScaffoldMessenger.of(context).showSnackBar(
-                                    //   SnackBar(
-                                    //     content: const Text(
-                                    //         'QR code saved successfully'),
-                                    //   ),
-                                    // );
-                                  } else {
-                                    print('Error: Unable to export QR code');
                                   }
-                                } catch (e) {
-                                  print('Error exporting QR code: $e');
-                                }
+                                } catch (e) {}
+                                return null;
                               },
                             ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            // Launch Twitter page
+                            launchTheUrl(
+                                "https://www.buymeacoffee.com/ellisrockefeller");
+                          },
+                          icon: const Icon(
+                            FontAwesomeIcons.mugHot,
+                            color: Colors.white,
+                            size: 10,
+                          ),
+                          label: const Text(
+                            'Buy Me a coffee',
+                            style: TextStyle(fontSize: 10),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Goldish,
                           ),
                         ),
                       ],
@@ -325,7 +327,7 @@ class _PrettyQrSettings extends StatefulWidget {
 
   @visibleForTesting
   static const kDefaultPrettyQrDecorationImage = PrettyQrDecorationImage(
-    image: AssetImage('assets/images/flutter_logo.png'),
+    image: AssetImage('assets/images/share.png'),
     position: PrettyQrDecorationImagePosition.embedded,
   );
 
@@ -766,8 +768,8 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
             }
           } else if (snapshot.hasError) {
             // Handle connectivity check error
-            print(snapshot.error);
-            return Center(child: Text('Error checking internet connection'));
+            return const Center(
+                child: Text('Error checking internet connection'));
           } else {
             // Show loading indicator while checking
             return const Center(child: CircularProgressIndicator());
@@ -824,7 +826,7 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) {
                               // Handle image loading error here
-                              return Icon(
+                              return const Icon(
                                   Icons.error); // Example error placeholder
                             },
                           ),
@@ -858,7 +860,6 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
                       ),
                     );
 
-                    print(filepath);
                     Navigator.pop(context);
                   }
                 },
@@ -921,7 +922,7 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
           ),
           Container(
               padding: const EdgeInsets.all(16),
-              child: Text("No Internet Available")),
+              child: const Text("No Internet Available")),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -942,7 +943,6 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
                       ),
                     );
 
-                    print(filepath);
                     Navigator.pop(context);
                   }
                 },
@@ -962,7 +962,7 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
     );
   }
 
-  Color pickerColor = Color.fromARGB(255, 157, 11, 230);
+  Color pickerColor = const Color.fromARGB(255, 157, 11, 230);
   Color currentColor = Goldish;
 
 // ValueChanged<Color> callback
@@ -995,7 +995,7 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Pick a color!'),
+          title: const Text('Pick a color!'),
           content: SingleChildScrollView(
             child: ColorPicker(
                 paletteType: PaletteType.hslWithHue,
@@ -1041,12 +1041,9 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
           isImageSelected = true;
         });
         _filePath = result.files.single.path!;
-        print("from the esplorer:${_filePath}");
         return result.files.single.path;
       }
-    } catch (e) {
-      print('Error picking file: $e');
-    }
+    } catch (e) {}
     return null; // Return null if no file was selected or an error occurred
   }
 

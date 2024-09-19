@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:qrcodescanner/src/sample_feature/first_qr.dart';
+import 'package:qrcodegenerator/src/pages/first_qr.dart';
 
 class FullImageView extends StatelessWidget {
   final String imagePath;
@@ -20,8 +20,8 @@ class FullImageView extends StatelessWidget {
             onTap: () {
               showPopupMenu(context, index);
             },
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
+            child: const Padding(
+              padding: EdgeInsets.all(8.0),
               child: Icon(Icons.menu),
             ),
           )
@@ -33,7 +33,7 @@ class FullImageView extends StatelessWidget {
         children: [
           Center(
             child: Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Image.file(
                 File(imagePath),
                 fit: BoxFit.cover,

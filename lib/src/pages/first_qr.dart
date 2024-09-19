@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:qrcodescanner/src/sample_feature/fullImageView.dart';
-import 'package:qrcodescanner/src/sample_feature/pretty_qr.dart';
-import 'package:qrcodescanner/src/settings/settings_page.dart';
+import 'package:qrcodegenerator/src/pages/fullImageView.dart';
+import 'package:qrcodegenerator/src/pages/pretty_qr.dart';
+import 'package:qrcodegenerator/src/settings/settings_page.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,7 +19,6 @@ Future<List<String>> getSavedImages() async {
 
   final jogtest =
       savedImages.map<String>((key) => prefs.getString(key)!).toList();
-  print("jog:$jogtest");
   return jogtest;
 }
 
@@ -27,11 +26,7 @@ Future<void> deleteImageFromPrefs(String key) async {
   try {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove(key);
-    print('Successfully removed key: $key from SharedPreferences');
-  } catch (e) {
-    print('Error deleting key $key from SharedPreferences: $e');
-    // Handle the error here, such as showing an error message to the user
-  }
+  } catch (e) {}
 }
 
 class updateTheImages extends ChangeNotifier {
@@ -54,7 +49,6 @@ class updateTheImages extends ChangeNotifier {
     await deleteImageFile(imagePath);
     items = prefs.getKeys().toList();
     notifyListeners();
-    print("$key was deleted. Remaining items are: $items and the path $path");
   }
 
   Future<void> shareQrCode(int index) async {
@@ -63,15 +57,11 @@ class updateTheImages extends ChangeNotifier {
     try {
       if (imagePath != null) {
         // Share the temporary file
-        await Share.shareXFiles([XFile('${imagePath}')], text: 'Great picture');
+        await Share.shareXFiles([XFile(imagePath)], text: 'Great picture');
 
         // Delete the temporary file after sharing
-      } else {
-        print('Error: Unable to share QR code');
-      }
-    } catch (e) {
-      print('Error sharing QR code: $e');
-    }
+      } else {}
+    } catch (e) {}
   }
 
   Future<void> deleteImageFile(String imagePath) async {
@@ -79,13 +69,8 @@ class updateTheImages extends ChangeNotifier {
       final File imageFile = File(imagePath);
       if (await imageFile.exists()) {
         await imageFile.delete();
-        print('Image file deleted: $imagePath');
-      } else {
-        print('Image file not found: $imagePath');
-      }
-    } catch (e) {
-      print('Error deleting image file: $e');
-    }
+      } else {}
+    } catch (e) {}
   }
 
   Future<void> initializeImages() async {
@@ -98,11 +83,11 @@ class FileUploadView extends StatefulWidget {
   const FileUploadView({Key? key}) : super(key: key);
 
   @override
-  _FileUploadViewState createState() => _FileUploadViewState();
+  FileUploadViewState createState() => FileUploadViewState();
 }
 
-class _FileUploadViewState extends State<FileUploadView> {
-  TextEditingController _textInput = TextEditingController();
+class FileUploadViewState extends State<FileUploadView> {
+  final TextEditingController _textInput = TextEditingController();
   // String? _textInput = null;
   bool isSwitched = false;
 
@@ -129,16 +114,18 @@ class _FileUploadViewState extends State<FileUploadView> {
         },
         child: Scaffold(
           appBar: AppBar(
+            
             foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
             iconTheme: Theme.of(context).appBarTheme.iconTheme,
             backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
             title: const Text('QrCode Generator'),
             titleTextStyle: Theme.of(context).appBarTheme.titleTextStyle,
+            automaticallyImplyLeading: false,
             centerTitle: true,
             actions: [
               IconButton(
                 onPressed: () {
-                  Get.to(SettingsPage());
+                  Get.to(const SettingsPage());
                 },
                 icon: const Icon(
                   Icons.settings,
@@ -179,29 +166,29 @@ class _FileUploadViewState extends State<FileUploadView> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               Text(
-                                  '1. Upload your file to a cloud storage platform like:',
+                                  'To add an image link or a file link\n 1. Upload your file to a cloud storage platform like:',
                                   style: Theme.of(context).textTheme.bodyLarge),
                               Padding(
-                                padding: EdgeInsets.only(left: 16.0),
+                                padding: const EdgeInsets.only(left: 16.0),
                                 child: Text('- iCloud',
                                     style:
                                         Theme.of(context).textTheme.bodyMedium),
                               ),
                               Padding(
-                                padding: EdgeInsets.only(left: 16.0),
+                                padding: const EdgeInsets.only(left: 16.0),
                                 child: Text('- Google Drive',
                                     style:
                                         Theme.of(context).textTheme.bodyMedium),
                               ),
                               Padding(
-                                padding: EdgeInsets.only(left: 16.0),
+                                padding: const EdgeInsets.only(left: 16.0),
                                 child: Text(
                                   '- Dropbox',
                                   style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                               ),
                               Padding(
-                                padding: EdgeInsets.only(left: 16.0),
+                                padding: const EdgeInsets.only(left: 16.0),
                                 child: Text(
                                   '- OneDrive',
                                   style: Theme.of(context).textTheme.bodyMedium,
@@ -218,10 +205,14 @@ class _FileUploadViewState extends State<FileUploadView> {
                         const SizedBox(height: 20),
                         TextField(
                           controller: _textInput,
-                          decoration: const InputDecoration(
-                            icon: Icon(Icons.link),
-                            labelText: 'Enter Text',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: "Enter URL",
+                            labelStyle: TextStyle(
+                                fontSize: 16, color: Colors.grey[600]),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              borderSide: const BorderSide(color: Colors.grey),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -236,13 +227,11 @@ class _FileUploadViewState extends State<FileUploadView> {
                                   'textInput': Thetext,
                                 },
                               );
-                              print(
-                                  "printed texxxxy $Thetext" + " from button");
                             } else {
                               // Show a Snackbar message if _textInput is empty
                               Get.snackbar(
-                                animationDuration: Duration(microseconds: 3000),
-                                duration: Duration(milliseconds: 1500),
+                                animationDuration: const Duration(microseconds: 3000),
+                                duration: const Duration(milliseconds: 1500),
                                 'Input Required',
                                 'Please input the link to Generate a Qrcode',
                                 snackPosition: SnackPosition.BOTTOM,
@@ -260,7 +249,7 @@ class _FileUploadViewState extends State<FileUploadView> {
                 List<String> savedImages =
                     context.watch<updateTheImages>().savedImages;
                 return GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 4, // Number of columns
                     crossAxisSpacing: 10, // Spacing between columns
                     mainAxisSpacing: 10, // Spacing between rows
@@ -271,11 +260,8 @@ class _FileUploadViewState extends State<FileUploadView> {
                     return GestureDetector(
                       onLongPress: () {
                         showPopupMenu(context, index);
-                        print("this is long pressed");
                       },
                       onTap: () {
-                        // Handle selection of saved image
-                        print('Selected saved image: ${savedImages[index]}');
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -328,29 +314,29 @@ void showPopupMenu(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text('Options'),
+        title: const Text('Options'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.delete),
-              title: Text('Delete'),
+              leading: const Icon(Icons.delete),
+              title: const Text('Delete'),
               onTap: () {
                 Navigator.of(context).pop();
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                      title: Text('Confirmation'),
+                      title: const Text('Confirmation'),
                       content:
-                          Text('Are you sure you want to delete this image?'),
+                          const Text('Are you sure you want to delete this image?'),
                       actions: <Widget>[
                         TextButton(
                           onPressed: () {
                             Navigator.of(context)
                                 .pop(); // Close confirmation dialog
                           },
-                          child: Text('Cancel'),
+                          child: const Text('Cancel'),
                         ),
                         TextButton(
                           onPressed: () {
@@ -361,7 +347,7 @@ void showPopupMenu(
                                 .pop(); // Close confirmation dialog
                             // Close options dialog
                           },
-                          child: Text('Delete'),
+                          child: const Text('Delete'),
                         ),
                       ],
                     );
@@ -370,8 +356,8 @@ void showPopupMenu(
               },
             ),
             ListTile(
-              leading: Icon(Icons.share),
-              title: Text('Share'),
+              leading: const Icon(Icons.share),
+              title: const Text('Share'),
               onTap: () {
                 Provider.of<updateTheImages>(context, listen: false)
                     .shareQrCode(index);
