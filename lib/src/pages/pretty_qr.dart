@@ -80,7 +80,6 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
           imageData.buffer.asUint8List(),
           mode: FileMode.write,
         );
-        
 
         // Share the temporary file
         await Share.shareXFiles([XFile(tempFilePath)], text: 'Great picture');
@@ -101,8 +100,7 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
           GestureDetector(
               onTap: () {
                 showPngInfo(context);
-  _shareQrCode();
-                                
+                _shareQrCode();
               },
               child: const Padding(
                 padding: EdgeInsets.all(12.0),
@@ -175,7 +173,7 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
                                 try {
                                   final imageBytes =
                                       await qrImage.toImageAsBytes(
-                                    size: 800, // Adjust the size as needed
+                                    size: 800,
                                     format: ImageByteFormat.png,
                                     decoration: decoration,
                                   );
@@ -194,12 +192,19 @@ class _PrettyQrHomePageState extends State<PrettyQrHomePage> {
                                       mode: FileMode.write,
                                     );
 
+                                    // final result =
+                                    //     await ImageGallerySaver.saveImage(
+                                    //   imageBytes.buffer.asUint8List(),
+                                    //   name:
+                                    //       "qr_code_${DateTime.now().millisecondsSinceEpoch}",
+                                    // );
+
+                                    // File('$dir/file_name${DateTime.now()}.png')
+                                    //     .writeAsBytes(imageBytes as List<int>);
                                     final result =
-                                        await ImageGallerySaver.saveImage(
-                                      imageBytes.buffer.asUint8List(),
-                                      name:
-                                          "qr_code_${DateTime.now().millisecondsSinceEpoch}",
-                                    );
+                                        await ImageGallerySaver.saveFile(
+                                            tempFilePath);
+
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text('QR code saved Gallery'),
@@ -848,8 +853,9 @@ class _PrettyQrSettingsState extends State<_PrettyQrSettings> {
                   if (filepath != null) {
                     setState(() {
                       isImageSelected = true;
-                      _selectedOption =
-                          path.basename(filepath).substring(0, 20);
+                      _selectedOption = filepath.length < 20
+                          ? path.basename(filepath).substring(0, 20)
+                          : path.basename(filepath);
                     });
                     widget.onChanged?.call(
                       widget.decoration.copyWith(
